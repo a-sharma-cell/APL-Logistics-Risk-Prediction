@@ -70,9 +70,8 @@ APL_Logistics_Project/
 ├── app.py                          # Streamlit dashboard
 ├── late_delivery_prediction.ipynb  # ML pipeline notebook
 ├── APL_Logistics.csv               # Dataset (180,519 orders)
-├── rf_model.pkl                    # Trained Random Forest model
-├── scaler.pkl                      # StandardScaler
 └── README.md                       # This file
+Note: rf_model.pkl and scaler.pkl are auto-generated on first run.
 ```
 
 ---

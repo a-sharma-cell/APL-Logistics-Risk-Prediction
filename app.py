@@ -2,8 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
+import os
 import plotly.express as px
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
 st.set_page_config(
     page_title="APL Logistics — Risk Dashboard",
@@ -13,14 +16,57 @@ st.set_page_config(
 )
 
 @st.cache_resource
-def load_model():
-    with open('rf_model.pkl', 'rb') as f:
-        model = pickle.load(f)
-    with open('scaler.pkl', 'rb') as f:
-        scaler = pickle.load(f)
-    return model, scaler
+def load_or_train_model():
+    if os.path.exists('rf_model.pkl') and os.path.exists('scaler.pkl'):
+        with open('rf_model.pkl', 'rb') as f:
+            model = pickle.load(f)
+        with open('scaler.pkl', 'rb') as f:
+            scaler = pickle.load(f)
+        return model, scaler
 
-model, scaler = load_model()
+    # Train model if pkl not found
+    df = pd.read_csv('APL_Logistics.csv', encoding='latin1')
+    df = df.drop(columns=['Delivery Status', 'Days for shipping (real)',
+                           'Customer Fname', 'Customer Lname', 'Customer Street',
+                           'Customer Id', 'Order Customer Id', 'Product Name', 'Customer Zipcode'])
+
+    label_cols = ['Category Name', 'Customer City', 'Customer State',
+                  'Department Name', 'Order City', 'Order Country',
+                  'Order Region', 'Order State']
+    le = LabelEncoder()
+    for col in label_cols:
+        df[col] = le.fit_transform(df[col])
+
+    df = pd.get_dummies(df, columns=['Type', 'Customer Country', 'Customer Segment',
+                                      'Market', 'Shipping Mode', 'Order Status'])
+
+    X = df.drop(columns=['Late_delivery_risk'])
+    y = df['Late_delivery_risk']
+
+    scale_cols = ['Days for shipment (scheduled)', 'Benefit per order',
+                  'Sales per customer', 'Category Id', 'Category Name',
+                  'Customer City', 'Customer State', 'Department Id',
+                  'Department Name', 'Latitude', 'Longitude', 'Order City',
+                  'Order Country', 'Order Item Discount', 'Order Item Discount Rate',
+                  'Order Item Product Price', 'Order Item Profit Ratio',
+                  'Order Item Quantity', 'Sales', 'Order Item Total',
+                  'Order Profit Per Order', 'Order Region', 'Order State',
+                  'Product Price']
+
+    scaler = StandardScaler()
+    X[scale_cols] = scaler.fit_transform(X[scale_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+
+    with open('rf_model.pkl', 'wb') as f:
+        pickle.dump(model, f)
+    with open('scaler.pkl', 'wb') as f:
+        pickle.dump(scaler, f)
+
+    return model, scaler
 
 @st.cache_data
 def load_data():
@@ -59,7 +105,6 @@ def prepare_risk_data():
                   'Product Price']
 
     X[scale_cols] = scaler.transform(X[scale_cols])
-
     proba = model.predict_proba(X)[:, 1]
 
     raw_df['Late_Probability'] = (proba * 100).round(1)
@@ -68,8 +113,13 @@ def prepare_risk_data():
                                       labels=['Low Risk', 'Medium Risk', 'High Risk'])
     return raw_df
 
+# Load model (from pkl or train)
+with st.spinner("🔄 Loading model... (first time may take 3-5 minutes)"):
+    model, scaler = load_or_train_model()
+
 df = load_data()
 
+# Sidebar
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/APL_logo.svg/1200px-APL_logo.svg.png", width=150)
 st.sidebar.title("APL Logistics")
 st.sidebar.markdown("---")
