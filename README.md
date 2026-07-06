@@ -16,8 +16,7 @@ This project develops a **machine learning–based predictive system** to identi
 
 ## 🌐 Live Demo
 
-> **Dashboard Link:** [Click here to view live dashboard](https://YOUR-APP-LINK.streamlit.app)
-> *(Link will be updated after deployment)*
+> **Dashboard Link:** [Click here to view live dashboard](https://apl-logistics-risk-prediction-atharva.streamlit.app)
 
 ---
 
