@@ -14,6 +14,11 @@ This project develops a **machine learning–based predictive system** to identi
 
 > **Key Result:** Random Forest model achieves **77% accuracy** and **69% recall** on 180,519 real order records, flagging 11,027 high-risk shipments for proactive intervention.
 
+## 🌐 Live Demo
+
+> **Dashboard Link:** [Click here to view live dashboard](https://YOUR-APP-LINK.streamlit.app)
+> *(Link will be updated after deployment)*
+
 ---
 
 ## 🎯 Problem Statement
@@ -64,10 +69,10 @@ APL Logistics faces:
 APL_Logistics_Project/
 ├── app.py                          # Streamlit dashboard
 ├── late_delivery_prediction.ipynb  # ML pipeline notebook
+├── APL_Logistics.csv               # Dataset (180,519 orders)
 ├── rf_model.pkl                    # Trained Random Forest model
 ├── scaler.pkl                      # StandardScaler
 └── README.md                       # This file
-Note: APL_Logistics.csv (dataset) is not included due to file size.
 ```
 
 ---
